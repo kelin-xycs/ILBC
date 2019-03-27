@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html style="">
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="jWebForm.css" />
+    <script type="text/javascript" src="jWebForm.js"></script>
+    <script type="text/javascript">
+
+        $j.Page_Load = function Page_Load() {
+
+            BindMenu();
+
+            var ifrEditor = document.getElementById("ifrEditor");
+            ifrEditor.contentWindow.document.body.contentEditable = true;
+
+            ifrEditor.contentWindow.document.body.focus();
+
+            //  将 iframe Window 里的 mousedown 事件加入 $j ， 这样当 鼠标 点击 iframe 窗口时，可以关闭父窗口里的下拉菜单
+            ifrEditor.contentWindow.addEventListener("mousedown", $j.Frame_Window_MouseDown);
+        }
+
+        function BindMenu()
+        {
+            var dropMenu = $j("DropMenu1");
+
+            var topItem = $j.DropMenu.TopItem("文件");
+
+            var subItem = $j.DropMenu.SubItem("保存", function () { Cef.OpenSaveFileDialog(); });
+            topItem.AddSubItem(subItem);
+
+            subItem = $j.DropMenu.SubItem("aaaaaaaaaaaaaaa", function () { alert("aaaaaaaaaaaaaaa"); });
+            topItem.AddSubItem(subItem);
+
+            subItem = $j.DropMenu.SubItem("bbbbbbbbbbbbbbbbbbb", function () { alert("bbbbbbbbbbbbbbbbbbb"); });
+            topItem.AddSubItem(subItem);
+
+            dropMenu.AddTopItem(topItem);
+
+
+
+
+            topItem = $j.DropMenu.TopItem("工具");
+
+            subItem = $j.DropMenu.SubItem("选项", function () { alert("暂时没有这个功能 。"); });
+            topItem.AddSubItem(subItem);
+            
+            subItem = $j.DropMenu.SubItem("ccccccccccccccc", function () { alert("ccccccccccccccc"); });
+            topItem.AddSubItem(subItem);
+            
+            dropMenu.AddTopItem(topItem);
+        }
+
+        function SaveFile(file)
+        {
+            var ifrEditor = document.getElementById("ifrEditor");
+            var content = ifrEditor.contentWindow.document.body.innerText;
+            
+            Cef.SaveFile(file, content);
+        }
+    </script>
+</head>
+<body style="display:flex; flex-flow:column;">
+	<div style="border-bottom:solid 1px gray"><j:DropMenu id="DropMenu1"></j:DropMenu></div>
+	<iframe id="ifrEditor" style="border: solid 0px; flex:1;"></iframe>
+</body>
+</html>

@@ -1,0 +1,36 @@
+.jwf_DropDownListItem
+{
+
+}
+.jwf_DropDownListItem:hover
+{
+    background-color: lightgray;
+}
+
+.jwf_Button
+{
+    background-color: lightgray;
+    border: solid 1px gray;
+    cursor:default
+}
+.jwf_Button:hover
+{
+    background-color: lightblue;
+    
+}
+
+.jwf_DropMenu_TopItem
+{
+
+}
+.jwf_DropMenu_TopItem:hover 
+{
+    text-decoration: underline;
+}
+.jwf_DropMenu_SubItem 
+{
+}
+.jwf_DropMenu_SubItem:hover 
+{
+    background-color: lightblue;
+}
