@@ -100,10 +100,22 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="jWebForm.css">
+    <Content Include="jWebForm\DropDown.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="jWebForm.js">
+    <Content Include="jWebForm\DropDownList.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="jWebForm\EditArea.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="jWebForm\DragObj.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="jWebForm\jWebForm.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="jWebForm\jWebForm.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Main.html">

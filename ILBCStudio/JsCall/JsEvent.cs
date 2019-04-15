@@ -14,9 +14,9 @@ namespace JsCall
             DemoRenderProcessHandler._browser.SendProcessMessage(CefProcessId.Browser, m);
         }
 
-        public void SaveFile(string file, string content)
+        public void SaveFile(string file, string text)
         {
-            byte[] b = Encoding.UTF8.GetBytes(content);
+            byte[] b = Encoding.UTF8.GetBytes(text);
 
             using (FileStream stream = File.Create(file))
             {

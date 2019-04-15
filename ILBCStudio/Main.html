@@ -4,25 +4,24 @@
 <head>
     <meta charset="utf-8" />
     <title></title>
-    <link rel="stylesheet" type="text/css" href="jWebForm.css" />
-    <script type="text/javascript" src="jWebForm.js"></script>
+    <link rel="stylesheet" type="text/css" href="jWebForm/jWebForm.css" />
+    <script type="text/javascript" src="jWebForm/jWebForm.js"></script>
+    <script type="text/javascript" src="jWebForm/DragObj.js"></script>
+    <script type="text/javascript" src="jWebForm/EditArea.js"></script>
+    <script type="text/javascript" src="jWebForm/DropDown.js"></script>
+    <script type="text/javascript" src="jWebForm/DropDownList.js"></script>
     <script type="text/javascript">
 
         $j.Page_Load = function Page_Load() {
 
             BindMenu();
 
-            var ifrEditor = document.getElementById("ifrEditor");
-            ifrEditor.contentWindow.document.body.contentEditable = true;
+            var editArea = $j("EditArea1");
 
-            ifrEditor.contentWindow.document.body.focus();
-
-            //  将 iframe Window 里的 mousedown 事件加入 $j ， 这样当 鼠标 点击 iframe 窗口时，可以关闭父窗口里的下拉菜单
-            ifrEditor.contentWindow.addEventListener("mousedown", $j.Frame_Window_MouseDown);
+            editArea.Init();
         }
 
-        function BindMenu()
-        {
+        function BindMenu() {
             var dropMenu = $j("DropMenu1");
 
             var topItem = $j.DropMenu.TopItem("文件");
@@ -39,30 +38,161 @@
             dropMenu.AddTopItem(topItem);
 
 
-
-
             topItem = $j.DropMenu.TopItem("工具");
 
-            subItem = $j.DropMenu.SubItem("选项", function () { alert("暂时没有这个功能 。"); });
+            subItem = $j.DropMenu.SubItem("选项", OpenOptionsDialog);
             topItem.AddSubItem(subItem);
-            
+
             subItem = $j.DropMenu.SubItem("ccccccccccccccc", function () { alert("ccccccccccccccc"); });
             topItem.AddSubItem(subItem);
-            
+
             dropMenu.AddTopItem(topItem);
         }
 
-        function SaveFile(file)
-        {
-            var ifrEditor = document.getElementById("ifrEditor");
-            var content = ifrEditor.contentWindow.document.body.innerText;
-            
-            Cef.SaveFile(file, content);
+        function SaveFile(file) {
+            //var ifrEditor = document.getElementById("ifrEditor");
+            //var text = ifrEditor.contentWindow.document.body.innerText;
+
+            var editArea = $j("EditArea1");
+
+            var text = editArea.GetText();
+
+            Cef.SaveFile(file, text);
         }
-    </script>
+
+        var dragOptions;
+
+        function OpenOptionsDialog() {
+            if (dragOptions) {
+                dragOptions.Show();
+                return;
+            }
+
+            var divOptions = document.getElementById("divOptions");
+
+            var drag = $j.DragObj(divOptions);
+
+            drag.Width("400px");
+            drag.Height("300px");
+            drag.MinWidth("400px");
+            drag.MinHeight("300px");
+
+            var divContent = document.getElementById("divOptionsContent");
+
+            drag.NotDrag(divContent);  //  NotDrag() 方法用于设置元素不受拖拉影响
+
+            var spanClose = document.getElementById("spanOptionsClose");
+
+            spanClose.addEventListener("click", function () {
+                drag.Close();
+            });
+
+            var ddlFont = $j("ddlOptionsFont");
+
+            ddlFont.DataBind(
+                [
+                    "&nbsp;",
+                    "Arial",
+                    "宋体",
+                    "微软雅黑"
+                ]
+            );
+
+            var ddlFontSize = $j("ddlOptionsFontSize");
+
+            ddlFontSize.DataBind(
+                [
+                    "&nbsp;",
+                    "20px",
+                    "30px",
+                    "40px",
+                    "50px",
+                    "60px"
+                ]
+            );
+
+            drag.Show();
+
+            dragOptions = drag;
+        }
+
+        function btnSaveOptions_Click() {
+
+            var ddlFont = $j("ddlOptionsFont");
+
+            var ddlFontSize = $j("ddlOptionsFontSize");
+
+            var font = ddlFont.SelectedText().trim();
+
+            var fontSize = ddlFontSize.SelectedText().trim();
+
+            var div = document.getElementById("divEditArea");
+
+            div.style.fontFamily = font;
+            div.style.fontSize = fontSize;
+        }
+
+        function btnCancelOptions_Click() {
+            dragOptions.Close();
+        }
+
+/**/</script>
 </head>
-<body style="display:flex; flex-flow:column;">
-	<div style="border-bottom:solid 1px gray"><j:DropMenu id="DropMenu1"></j:DropMenu></div>
-	<iframe id="ifrEditor" style="border: solid 0px; flex:1;"></iframe>
+<body>
+
+    <table style="height:100%; width:100%">
+        <tr>
+            <td style="height:1px; border-bottom:solid 1px gray">
+                <j:DropMenu id="DropMenu1"></j:DropMenu>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div id="divEditArea" style="overflow-y:auto; height:100%;">
+                    <j:EditArea id="EditArea1" MinHeight="100%"></j:EditArea>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div id="divOptions" style="border: 1px solid gray; height: 100%; background-color:white ">
+        <table id="table1" style="width:100%; height:100%">
+            <tr>
+                <td style="height:1px">
+                    <div>选项<span id="spanOptionsClose" style="float:right;">×</span></div>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-bottom:10px">
+
+                    <div id="divOptionsContent" style="height: 100%; border-top: solid 1px gray; border-bottom: solid 1px gray;">
+
+                        <table style="height:100%">
+                            <tr>
+                                <td style="width:255px; height:1px; padding-top:10px">字体</td>
+                                <td style="padding-top:10px">大小</td>
+                            </tr>
+                            <tr>
+                                <td style="height:1px"><j:DropDownList id="ddlOptionsFont" Width="250px" Height="25px"></j:DropDownList></td>
+                                <td><j:DropDownList id="ddlOptionsFontSize" Width="100px" Height="25px"></j:DropDownList></td>
+                            </tr>
+                            <tr>
+                                <td style="height:100%"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="text-align: right; padding-bottom:10px; cursor: default">
+                                    <span onclick="btnSaveOptions_Click();">确定</span>
+                                    <span onclick="btnCancelOptions_Click();">取消</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                    
+                </td>
+            </tr>
+        </table>
+    </div>
+
 </body>
 </html>
