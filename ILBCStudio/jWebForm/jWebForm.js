@@ -1,672 +1,357 @@
-document.documentElement.setAttribute("ondragstart", "return false;");
-
-window.addEventListener("load", jwf$window_load);
-window.addEventListener("mousedown", jwf$window_mousedown);
-
-/* 这部分是 为了解决 window mousedown 事件 在 iframe 里 不起作用 的 问题
-   iframe 是一个 独立的 window ， 点击 iframe 内容只会触发 iframe 窗口自己的 mousedown 事件
-   这样就导致 主窗口 的 DropDown DropDownList DropMenu 等 控件 不能利用 window mousedown 事件 关闭 下拉框 下拉菜单
-   使用方法 是：
-
-    1 jWebForm 控件 使用 jwf$AddEventHandler_To_Frames_Window_MouseDown(handler) 方法 来 添加 window mousedown 事件 
-      代替 window.addEventListener("mousedown", function xxx());
-
-    2 开发人员 应负责 把 $j.Frame_Window_MouseDown 添加到 iframe 的 window mousedown 事件，如下：
-
-      var ifr = document.getElementById("ifr");
-      ifr.contentWindow.addEventListener("mousedown", $j.Frame_Window_MouseDown);
-
-    当然，第 2 步 不是必须的，如果不做 第 2 步，那么，jWebForm 就不知道 点击 iframe 的事件发生，
-    导致的效果就是 比如 点击 iframe 时 主窗口 里的 DropDown DropDownList DropMenu 的 下拉框 下拉菜单 不会关闭
-    当然这不一定是问题，有时候这样的效果也是可以接受的，甚至有时候要的就是这种效果。 ^^
-
-   推而广之，如果一个页面中包含多个 iframe， iframe 也有嵌套，那么也适用上述的做法，
-   我们把 主窗口 和 iframe 都看作是一个 frame，
-   假设一个 页面 中有 n 个 frame，
-   开发人员 在 A frame 中使用了 jWebForm 控件，
-   则可以选择将 A frame 的 $j.Frame_Window_MouseDown 添加到 其它的任意的 frame 的 window mousedown 事件。
-   在 B frame ， C frame …… 中 使用了 jWebForm 控件亦然，依此类推。
-   可以同时在多个 frame 中同时使用 jWebForm 控件。
-*/
-var jwf$window_mousedown$handlers = [];
-
-function jwf$window_mousedown()
-{
-    for (var i = 0; i < jwf$window_mousedown$handlers.length; i++)
+(
+    function ()
     {
-        var handler = jwf$window_mousedown$handlers[i];
+        document.documentElement.setAttribute("ondragstart", "return false;");
 
-        handler();
-    }
-}
+        window.addEventListener("load", window_load);
+        //window.addEventListener("mousedown", window_mousedown);
 
-function jwf$AddEventHandler_To_Frames_Window_MouseDown(handler)
-{
-    jwf$window_mousedown$handlers[jwf$window_mousedown$handlers.length] = handler;
-}
+        /* 这部分是 为了解决 window mousedown 事件 在 iframe 里 不起作用 的 问题
+           iframe 是一个 独立的 window ， 点击 iframe 内容只会触发 iframe 窗口自己的 mousedown 事件
+           这样就导致 主窗口 的 DropDown DropDownList DropMenu 等 控件 不能利用 window mousedown 事件 关闭 下拉框 下拉菜单
+           使用方法 是：
+        
+            1 jWebForm 控件 使用 jwf$AddEventHandler_To_Frames_Window_MouseDown(handler) 方法 来 添加 window mousedown 事件 
+              代替 window.addEventListener("mousedown", function xxx());
+        
+            2 开发人员 应负责 把 $j.Frame_Window_MouseDown 添加到 iframe 的 window mousedown 事件，如下：
+        
+              var ifr = document.getElementById("ifr");
+              ifr.contentWindow.addEventListener("mousedown", $j.Frame_Window_MouseDown);
+        
+            当然，第 2 步 不是必须的，如果不做 第 2 步，那么，jWebForm 就不知道 点击 iframe 的事件发生，
+            导致的效果就是 比如 点击 iframe 时 主窗口 里的 DropDown DropDownList DropMenu 的 下拉框 下拉菜单 不会关闭
+            当然这不一定是问题，有时候这样的效果也是可以接受的，甚至有时候要的就是这种效果。 ^^
+        
+           推而广之，如果一个页面中包含多个 iframe， iframe 也有嵌套，那么也适用上述的做法，
+           我们把 主窗口 和 iframe 都看作是一个 frame，
+           假设一个 页面 中有 n 个 frame，
+           开发人员 在 A frame 中使用了 jWebForm 控件，
+           则可以选择将 A frame 的 $j.Frame_Window_MouseDown 添加到 其它的任意的 frame 的 window mousedown 事件。
+           在 B frame ， C frame …… 中 使用了 jWebForm 控件亦然，依此类推。
+           可以同时在多个 frame 中同时使用 jWebForm 控件。
+        */
+        
 
-$j.Frame_Window_MouseDown = jwf$window_mousedown;
-/*  *****************************************  */
+        //function AddEventHandler_To_Frames_Window_MouseDown(handler) {
+        //    window_mousedown$handlers[window_mousedown$handlers.length] = handler;
+        //}
 
-var jwf$controls = new Object();
+        
+        /*  *****************************************  */
 
-function $j(id)
-{
-    return jwf$controls[id];
-}
+        var controls = new Object();
 
-function jwf$window_load()
-{
-    jwf$InitControls();
-
-    if ($j.Page_Load)
-    {
-        $j.Page_Load();
-    }
-}
-
-function jwf$InitControls() {
-    var jelemts = [];
-
-    jwf$GetJwfElements(jelemts, document.body);
-
-    for (var i = 0; i < jelemts.length; i++)
-    {
-        var jelemt = jelemts[i];
-
-        var ctrl = jwf$GetControl(jelemt);
-
-        var id = jelemt.getAttribute("id");
-
-        if (id)
-        {
-            jwf$RegiterControl(ctrl, id);
+        function $j(id) {
+            return controls[id];
         }
 
-        jelemt.parentNode.replaceChild(ctrl.elemt, jelemt);
+        function window_load() {
+            InitControls();
 
-    }
-}
-
-// 因为 document  document.documentElement  document.body 的 getElementsByTagNameNS() 方法不起作用，
-// 返回 空集合，所以只能递归遍历来查找 jWebForm（j:） 元素。
-function jwf$GetJwfElements(elemts, elemt) {
-    var s = elemt.nodeName.substring(0, 2);
-    if (elemt.nodeName.substring(0, 2) == "J:") {
-        elemts[elemts.length] = elemt;
-    }
-
-    if (elemt.childNodes.length == 0)
-        return;
-
-    for (var i = 0; i < elemt.childNodes.length; i++) {
-        var childNode = elemt.childNodes[i];
-
-        jwf$GetJwfElements(elemts, childNode);
-    }
-}
-
-function jwf$RegiterControl(ctrl, id)
-{
-    ctrl.id = id;
-    ctrl.elemt.id = id;
-
-    jwf$controls[id] = ctrl;
-}
-
-var jwf$ControlTypes =
-{
-    //"J:DROPDOWNLIST": jwf$DropDownList,
-    "J:PICTUREBOX": jwf$PictureBox,
-    "J:BUTTON": jwf$Button,
-    "J:DROPMENU": jwf$DropMenu
-};
-
-function jwf$GetControl(jelemt)
-{
-    var ctor = jwf$ControlTypes[jelemt.nodeName];
-
-    if (!ctor)
-        throw "无效的 nodeName ：\"" + jelemt.nodeName + "\" 。";
-
-    return new ctor(jelemt);
-
-    //if (jelemt.nodeName == "J:DROPDOWNLIST")
-    //{
-    //    return new jwf$DropDownList(jelemt);
-    //}
-    //else if (jelemt.nodeName == "J:PICTUREBOX")
-    //{
-    //    return new jwf$PictureBox(jelemt);
-    //}
-    //else if (jelemt.nodeName == "J:BUTTON")
-    //{
-    //    return new jwf$Button(jelemt);
-    //}
-    //else if (jelemt.nodeName == "J:DROPMENU")
-    //{
-    //    return new jwf$DropMenu(jelemt);
-    //}
-
-    //throw "无效的 nodeName ：\"" + jelemt.nodeName + "\" 。";
-}
-
-function jwf$Control()
-{
-    
-}
-
-jwf$Control.prototype.Element = function jwf$Control$Element()
-{
-    return this.elemt;
-}
-
-function jwf$PictureBox(jelemt)
-{
-
-    this.playInterval = 5000;
-    this.stepInterval = 100;
-
-    if (jelemt)
-    {
-        var width = jelemt.getAttribute("Width");
-        var height = jelemt.getAttribute("Height");
-    }
-
-    if (width)
-        this.width = width;//parseInt(width.replace("px", ""));
-    else
-        this.width = "200px";
-
-    if (height)
-        this.height = height;//parseInt(height.replace("px", ""));
-    else
-        this.height = "300px";
-
-
-    var elemt = document.createElement("div");
-
-    elemt.style.display = "inline-block";
-    elemt.style.width = this.width;
-    elemt.style.height = this.height;
-    elemt.style.border = "solid 1px lightblue";
-
-
-    this.elemt = elemt;
-    elemt.jwfObj = this;
-
-    var hidden = document.createElement("div");
-    hidden.style.display = "none";
-
-    this.hidden = hidden;
-
-    elemt.appendChild(hidden);
-
-    var imgDiv = document.createElement("div");
-
-    imgDiv.style.width = "100%";
-    imgDiv.style.height = "100%";
-    imgDiv.style.overflow = "hidden";
-
-    this.imgDiv = imgDiv;
-
-    elemt.appendChild(imgDiv);
-
-}
-
-$j.PictureBox = function jwf$Create$PictureBox(id)
-{
-    var ctrl = new jwf$PictureBox();
-
-    if (id) {
-        jwf$RegiterControl(ctrl, id);
-    }
-
-    return ctrl;
-}
-
-jwf$PictureBox.prototype = new jwf$Control();
-
-jwf$PictureBox.prototype.Width = function jwf$PictureBox$Width(width)
-{
-    if (!width)
-        return this.width;
-
-    throw "jWebForm Error: 暂不支持 设置 Width 。"
-    //this.width = parseInt(width.replace("px", ""));
-
-    //this.elemt.style.width = this.width + "px";
-}
-
-jwf$PictureBox.prototype.Height = function jwf$PictureBox$Height(height)
-{
-    if (!height)
-        return this.height;
-
-    throw "jWebForm Error: 暂不支持 设置 Height 。"
-    //this.height = parseInt(height.replace("px", ""));
-
-    //this.elemt.style.height = this.height + "px";
-}
-
-jwf$PictureBox.prototype.LoadImages = function jwf$PictureBox$LoadImages(urlList, callback)
-{
-    
-    this.imgList = [];
-
-    this.imgLoadCount = 0;
-
-    this.imgCount = urlList.length;
-
-
-    for (var i=0; i<urlList.length; i++)
-    {
-        var url = urlList[i];
-        var img = document.createElement("img");
-
-        img.style.width = this.width;// + "px";
-        img.style.height = this.height;// + "px";
-        
-        img.src = url;
-
-        img.addEventListener("load", function jwf$PictureBox$PlayImageOnLoad(e)
-        {
-            var img = e.srcElement;
-            var picBox = img.jwfObj;
-
-            picBox.imgLoadCount++;
-
-            if (picBox.imgLoadCount == picBox.imgCount)
-            {
-                picBox.imgDiv.appendChild(picBox.imgList[0]);
-
-                callback(picBox);
+            if ($j.Page_Load) {
+                $j.Page_Load();
             }
-        });
-
-        img.jwfObj = this;
-
-        if (i > 0)
-        {
-            img.style.display = "none";
         }
 
-        this.imgList[this.imgList.length] = img;
-        this.hidden.appendChild(img);
-    }
-}
+        function InitControls() {
+            var jelemts = [];
 
-jwf$PictureBox.prototype.Play = function jwf$PictureBox$Play()
-{
-    this.imgIndex = 1;
+            GetJwfElements(jelemts, document.body);
 
-    window.setTimeout(jwf$PictureBox$PlayOneImage, this.playInterval, this);   
-}
+            for (var i = 0; i < jelemts.length; i++) {
+                var jelemt = jelemts[i];
 
-function jwf$PictureBox$PlayOneImage(picBox)
-{
-    var imgDiv = picBox.imgDiv;
+                var ctrl = GetControl(jelemt);
 
-    var img = picBox.imgList[picBox.imgIndex];
+                var id = jelemt.getAttribute("id");
 
-    img.style.marginTop = (picBox.elemt.offsetHeight * -1) + "px";
+                if (id) {
+                    RegisterControl(ctrl, id);
+                }
 
-    var imgOld = picBox.imgDiv.childNodes[0];
+                jelemt.parentNode.replaceChild(ctrl.elemt, jelemt);
 
-    imgDiv.insertBefore(img, imgOld);
-    
-    img.style.display = "";
+            }
+        }
 
-    picBox.stepCount = 0;
+        // 因为 document  document.documentElement  document.body 的 getElementsByTagNameNS() 方法不起作用，
+        // 返回 空集合，所以只能递归遍历来查找 jWebForm（j:） 元素。
+        function GetJwfElements(elemts, elemt) {
+            var s = elemt.nodeName.substring(0, 2);
+            if (elemt.nodeName.substring(0, 2) == "J:") {
+                elemts[elemts.length] = elemt;
+            }
 
-    picBox.playOneImageStepHandle = window.setInterval(jwf$PictureBox$PlayOneImageStep, picBox.stepInterval, picBox);
-}
+            if (elemt.childNodes.length == 0)
+                return;
 
-function jwf$PictureBox$PlayOneImageStep(picBox)
-{
-    var imgDiv = picBox.imgDiv;
+            for (var i = 0; i < elemt.childNodes.length; i++) {
+                var childNode = elemt.childNodes[i];
 
-    var top = picBox.elemt.offsetHeight * (1 - picBox.stepCount / 10);
+                GetJwfElements(elemts, childNode);
+            }
+        }
 
-    if (top < 0)
-        top = 0;
+        function RegisterControl(ctrl, id) {
+            ctrl.id = id;
+            ctrl.elemt.id = id;
 
-    var img = imgDiv.childNodes[0];
-    var imgOld = imgDiv.childNodes[1];
+            controls[id] = ctrl;
+        }
 
-    img.style.marginTop = (top * -1) + "px";
+        var controlTypes = new Object();
 
-    if (top == 0)
-    {
-        window.clearInterval(picBox.playOneImageStepHandle);
+        function RegisterControlType(nodeName, type)
+        {
+            controlTypes[nodeName] = type;
+        }
 
-        imgDiv.removeChild(imgOld);
-        imgOld.style.display = "none";
-
-        picBox.stepCount = 0;
-
-        picBox.imgIndex++;
         
-        if (picBox.imgIndex == picBox.imgCount)
-        {
-            picBox.imgIndex = 0;
+        function GetControl(jelemt) {
+            var ctor = controlTypes[jelemt.nodeName];
+
+            if (!ctor)
+                throw "未注册的 nodeName ：\"" + jelemt.nodeName + "\"，请使用 RegisterControlType(nodeName, type) 注册 。";
+
+            return new ctor(jelemt);
+
+            //if (jelemt.nodeName == "J:DROPDOWNLIST")
+            //{
+            //    return new jwf$DropDownList(jelemt);
+            //}
+            //else if (jelemt.nodeName == "J:PICTUREBOX")
+            //{
+            //    return new jwf$PictureBox(jelemt);
+            //}
+            //else if (jelemt.nodeName == "J:BUTTON")
+            //{
+            //    return new jwf$Button(jelemt);
+            //}
+            //else if (jelemt.nodeName == "J:DROPMENU")
+            //{
+            //    return new jwf$DropMenu(jelemt);
+            //}
+
+            //throw "无效的 nodeName ：\"" + jelemt.nodeName + "\" 。";
         }
 
-        window.setTimeout(jwf$PictureBox$PlayOneImage, picBox.playInterval, picBox);
+        function Control() {
 
-        return;
-    }
-
-    picBox.stepCount++;
-
-}
-
-function jwf$Button(jelemt)
-{
-    if (jelemt)
-    {
-        var width = jelemt.getAttribute("Width");
-        var height = jelemt.getAttribute("Height");
-        var text = jelemt.getAttribute("Text");
-        var click = jelemt.getAttribute("OnClick");
-    }
-
-    if (width)
-        this.width = parseInt(width.replace("px", ""));
-    else
-        this.width = 200;
-
-    if (height)
-        this.height = parseInt(height.replace("px", ""));
-    else
-        this.height = 30;
-
-    if (text)
-        this.text = text;
-    else
-        this.text = "";
-
-    if (click)
-        this.click = click;
-
-
-    var elemt = document.createElement("div");
-
-    elemt.style.boxSizing = "border-box";
-    
-    elemt.style.width = this.width + "px";
-    elemt.style.height = this.height + "px";
-    
-    elemt.className = "jwf_Button";
-
-    elemt.style.display = "inline-flex";
-    elemt.style.justifyContent = "center";
-    elemt.style.alignItems = "center";
-
-    elemt.addEventListener("click", function jwf$Button$Click() {
-        var btn = elemt.jwfObj;
-
-        var handler;
-
-        if (typeof (btn.click) == "string") {
-            handler = window[btn.click];
-        }
-        else if (typeof (btn.click) == "function") {
-            handler = btn.click;
         }
 
-        if (!handler) {
-            throw "jWebForm Error: \"" + btn.click + "\" 不是有效的 函数名 或 函数 。"
+        Control.prototype.Element = function Element() {
+            return this.elemt;
         }
 
-        handler(btn);
-
-    });
-
-    this.elemt = elemt;
-    elemt.jwfObj = this;
-
-    var textDiv = document.createElement("div");
-    
-    this.textDiv = textDiv;
-
-    textDiv.style.width = "fit-content";
-
-    textDiv.innerHTML = this.text;
-
-    elemt.appendChild(textDiv);
-
-}
-
-$j.Button = function jwf$Create$Button(id)
-{
-    var ctrl = new jwf$Button();
-
-    if (id)
-    {
-        jwf$RegiterControl(ctrl, id);
-    }
-
-    return ctrl;
-}
-
-jwf$Button.prototype = new jwf$Control();
-
-jwf$Button.prototype.Width = function jwf$Button$Width(width)
-{
-    if (!width)
-        return this.width;
-
-    this.width = parseInt(width.replace("px", ""));
-
-    this.elemt.style.width = this.width + "px";
-}
-
-jwf$Button.prototype.Height = function jwf$Button$Height(height)
-{
-    if (!height)
-        return this.height;
-
-    this.height = parseInt(height.replace("px", ""));
-
-    this.elemt.style.height = this.height + "px";
-}
-
-jwf$Button.prototype.Click = function jwf$Button$Click(click)
-{
-    if (!click)
-        return this.click;
-
-    this.click = click;
-}
-
-jwf$Button.prototype.Text = function jwf$Button$Text(text)
-{
-    if (!text)
-        return this.text;
-
-    this.text = text;
-    this.textDiv.innerHTML = text;
-}
-
-function jwf$DropMenu(jelemt)
-{
-    var elemt = document.createElement("div");
-
-    elemt.style.display = "inline-block";
-
-    elemt.style.cursor = "default";
-
-    this.elemt = elemt;
-    elemt.jwfObj = this;
-}
-
-$j.DropMenu = function jwf$Create$DropMenu(id)
-{
-    var ctrl = new jwf$DropMenu();
-
-    if (id)
-    {
-        jwf$RegiterControl(ctrl, id);
-    }
-
-    return ctrl;
-}
-
-jwf$DropMenu.prototype = new jwf$Control();
-
-jwf$DropMenu.prototype.AddTopItem = function jwf$DropMenu$AddTopItem(topItem)
-{
-    if (!topItem instanceof jwf$DropMenu$TopItem)
-        throw "参数 topItem 不是 TopItem 对象，应使用 $j.DropMenu.TopItem() 方法创建 TopItem 。";
-
-    var elemt = this.elemt;
-
-    elemt.appendChild(topItem.div);
-
-    topItem.menu = this;
-}
-
-function jwf$DropMenu$TopItem(text)
-{
-    var div = document.createElement("div");
-
-    div.style.display = "inline-block";
-    div.style.paddingLeft = "5px";
-    div.style.paddingRight = "5px";
-    div.style.position = "relative";
-
-    this.div = div;
-    div.jwfObj = this;
-
-    var textDiv = document.createElement("div");
-    textDiv.className = "jwf_DropMenu_TopItem";
-    textDiv.innerText = text;
-
-    div.appendChild(textDiv);
-
-    var drop = document.createElement("div");
-
-    drop.style.display = "none";
-    drop.style.padding = "1px";
-    drop.style.border = "solid 1px gray";
-    drop.style.backgroundColor = "white";
-    drop.style.position = "absolute";
-    drop.style.zIndex = 1;
-    drop.style.whiteSpace = "nowrap";
-
-    div.appendChild(drop);
-
-    this.drop = drop;
-    drop.jwfObj = this;
-
-    textDiv.addEventListener("mousedown", function jwf$DropMenu$TopItem$textDiv_mousedown()
-    {
-        drop.style.display = "block";
-
-        drop.jwfObj.menu.currentOpenDrop = drop;
-    });
-
-    textDiv.addEventListener("mouseover", function jwf$DropMenuTopItem$textDiv_mouseover()
-    {
-        var menu = drop.jwfObj.menu;
-
-        if (menu.currentOpenDrop && menu.currentOpenDrop != drop)
-        {
-            menu.currentOpenDrop.style.display = "none";
-            drop.style.display = "block";
-            menu.currentOpenDrop = drop;
-        }
-    })
-
-    div.addEventListener("mousedown", function jwf$DropMenu$TopItem$div_mousedown()
-    {
-        div.jwfObj.mousedownSelf = true;
-    });
-
-    jwf$AddEventHandler_To_Frames_Window_MouseDown(function jwf$DropMenu$window_mousedown()
-    {
-        if (drop.jwfObj.mousedownSelf)
-        {
-            drop.jwfObj.mousedownSelf = false;
-            return;
-        }
         
-        drop.style.display = "none";
-
-        var menu = drop.jwfObj.menu;
-
-        if (menu.currentOpenDrop && menu.currentOpenDrop == drop)
+            
+        //$j.Frame_Window_MouseDown = window_mousedown;
+        $j.RegisterControlType = RegisterControlType;
+        $j.Control = function CreateControl()
         {
-            drop.jwfObj.menu.currentOpenDrop = null;
-        }
-    });
-
-    /* 
-     * 用 jwf$AddEventHandler_To_Frames_Window_MouseDown() 替换 window.addEventListener() 的 原因 见
-     * jwf$AddEventHandler_To_Frames_Window_MouseDown() 及 相关方法和变量 的 注释 
-     */
-    //window.addEventListener("mousedown", function jwf$DropMenu$window_mousedown() {
-    //    if (drop.jwfObj.mousedownSelf) {
-    //        drop.jwfObj.mousedownSelf = false;
-    //        return;
-    //    }
-
-    //    drop.style.display = "none";
-    //});
-}
-
-$j.DropMenu.TopItem = function jwf$Create$DropMenu$TopItem(text)
-{
-    return new jwf$DropMenu$TopItem(text);
-}
-
-jwf$DropMenu$TopItem.prototype.AddSubItem = function jwf$DropMenu$TopItem$AddSubItem(subItem)
-{
-    if (!subItem instanceof jwf$DropMenu$SubItem)
-        throw "参数 subItem 不是 SubItem 对象，应使用 $j.DropMenu.SubItem() 方法创建 SubItem 。";
-
-    var drop = this.drop;
-
-    subItem.drop = drop;
-
-    drop.appendChild(subItem.div);
-}
-
-function jwf$DropMenu$SubItem(text, click)
-{
-    var div = document.createElement("div");
-
-    div.style.paddingLeft = "5px";
-    div.style.paddingRight = "5px";
-    div.className = "jwf_DropMenu_SubItem";
-
-    div.innerText = text;
-
-    this.div = div;
-    div.jwfObj = this;
-
-    var subItem = this;
-
-    div.addEventListener("click", function jwf$DropMenu$SubItem$div_click()
-    {
-        var drop = subItem.drop;
-
-        if (drop)
-            drop.style.display = "none";
-
-        var menu = drop.jwfObj.menu;
-
-        if (menu.currentOpenDrop && menu.currentOpenDrop == drop) {
-            drop.jwfObj.menu.currentOpenDrop = null;
+            return new Control();
         }
 
-        if (click)
-            click(subItem);
-    });
-}
 
-$j.DropMenu.SubItem = function jwf$Create$DropMenu$SubItem(text, click)
-{
-    return new jwf$DropMenu$SubItem(text, click);
-}
+        //var window_mousedown$handlers = [];
+
+        //  为了实现 跨 frame 的 全局事件，所以使用 $j.addEventListener(type, listener) 方法
+        //  为了让 全局事件 生效，需要调用 $j.RegisterFrame(win) 方法将 frame window 注册到 $j
+        //  引用了 jWebForm.js 的页面会自动调用 $j.RegisterFrame(win) 将当前 window 注册到 $j
+        //  未引用 jWebForm.js 的 frame 页面需要手动调用 $j.RegisterFrame(win) 将 frame window 注册到 $j
+        //  $j.RegisterFrame(win) 方法可以在任何 frame 中调用，该方法会找到 顶层窗口（top window），将 注册信息 保存在 top window
+        $j.addEventListener = function addEventListener(type, listener) {
+
+            var handlers = top.jwf$frameEvents[type];
+
+            if (!handlers)
+                throw "尚未支持 \"" + type + "\" 事件 。";
+
+            handlers.Add(listener);
+        }
+            
+
+        $j.removeEventListener = function removeEventListener(type, listener)
+        {
+            var handlers = top.jwf$frameEvents[type];
+
+            handlers.MoveToStart();
+
+            while (handlers.MoveNext())
+            {
+                var node = handlers.Current();
+                var h = node.value;
+
+                if (h == listener)
+                {
+                    handlers.Remove(node);
+                    break;
+                }
+            }
+        }
+        //function window_mousedown() {
+        //    for (var i = 0; i < window_mousedown$handlers.length; i++) {
+        //        var handler = window_mousedown$handlers[i];
+
+        //        handler();
+        //    }
+        //}
+
+        function RaiseEvent(handlers)
+        {
+            handlers.MoveToStart();
+
+            while (handlers.MoveNext())
+            {
+                var handler = handlers.Current().value;
+
+                handler();
+            }
+        }
+
+        function GetTopWindow(win) {
+            if (win.parent == win)
+                return win;
+
+            return GetTopWindow(win);
+        }
+
+
+
+        function RegisterFrame(win)
+        {
+            top.addEventListener("mousedown", frame_mousedown);
+            top.addEventListener("mousemove", frame_mousemove);
+            top.addEventListener("mouseup", frame_mouseup);
+        }
+
+        function frame_mousedown()
+        {
+            var handlers = top.jwf$frameEvents["mousedown"];
+
+            RaiseEvent(handlers);
+        }
+
+        function frame_mousemove() {
+            var handlers = top.jwf$frameEvents["mousemove"];
+
+            RaiseEvent(handlers);
+        }
+
+        function frame_mouseup() {
+            var handlers = top.jwf$frameEvents["mouseup"];
+
+            RaiseEvent(handlers);
+        }
+        //function AddEventHandler_To_Frames_Window_MouseDown(handler) {
+        //    window_mousedown$handlers[window_mousedown$handlers.length] = handler;
+        //}
+
+        $j.RegisterFrame = RegisterFrame;
+
+        window.$j = $j;
+
+
+        var top = GetTopWindow(window);
+
+        if (window == top) {
+            window.jwf$frameEvents = new Object();
+            window.jwf$frameEvents["mousedown"] = new LinkedList();
+            window.jwf$frameEvents["mousemove"] = new LinkedList();
+            window.jwf$frameEvents["mouseup"] = new LinkedList();
+        }
+
+        RegisterFrame(window);
+
+
+        function LinkedList() {
+
+            this.first = null;
+            this.last = null;
+            this.current = null;
+        }
+
+        function LinkedListNode(value) {
+            this.before = null;
+            this.next = null;
+
+            this.value = value;
+        }
+
+        LinkedList.prototype.Add = function Add(value) {
+            var node = new LinkedListNode(value);
+
+            if (this.last) {
+                this.last.next = node;
+                node.before = this.last;
+                this.last = node;
+
+                return;
+            }
+
+            this.first = node;
+            this.last = node;
+        }
+
+        LinkedList.prototype.Remove = function Remove(node) {
+
+            if (node == this.first && node == this.last) {
+                this.first = null;
+                this.last = null;
+
+
+            }
+
+            else if (node == this.first) {
+
+                this.first = node.next;
+
+
+            }
+
+            else if (node == this.last) {
+
+                this.last = node.before;
+
+
+            }
+            else {
+                node.before.next = node.next;
+                node.next.before = node.before;
+            }
+
+            if (this.current == node)
+                this.current = node.before;
+        }
+
+        LinkedList.prototype.MoveToStart = function MoveToStart() {
+            this.current = null;
+        }
+
+        LinkedList.prototype.MoveNext = function MoveNext() {
+            if (this.current == null) {
+                if (this.first == null)
+                    return false;
+
+                this.current = this.first;
+                return true;
+            }
+
+            if (this.current.next != null) {
+                this.current = this.current.next;
+                return true;
+            }
+
+            return false;
+        }
+
+        LinkedList.prototype.Current = function Current() {
+            return this.current;
+        }
+    }
+)();
+
+
+
+
