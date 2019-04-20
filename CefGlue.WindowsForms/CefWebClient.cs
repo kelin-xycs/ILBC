@@ -22,6 +22,13 @@
             return _lifeSpanHandler;
         }
 
+        //  add by kelin 2019/04/19
+        protected override CefRequestHandler GetRequestHandler()
+        {
+            return new RequestHandler();
+            //return base.GetRequestHandler();
+        }
+
         //  add by kelin 2019/03/26
         protected override bool OnProcessMessageReceived(CefBrowser browser, CefProcessId sourceProcess, CefProcessMessage message)
         {

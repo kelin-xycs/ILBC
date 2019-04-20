@@ -38,6 +38,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -100,27 +101,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="jWebForm\DropDown.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="jWebForm\DropDownList.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="jWebForm\EditArea.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="jWebForm\DragObj.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="jWebForm\jWebForm.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="jWebForm\jWebForm.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Main.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="Htmls\jWebForm\DropDown.js" />
+    <EmbeddedResource Include="Htmls\jWebForm\DropDownList.js" />
+    <EmbeddedResource Include="Htmls\jWebForm\DropMenu.js" />
+    <EmbeddedResource Include="Htmls\jWebForm\EditArea.js" />
+    <EmbeddedResource Include="Htmls\jWebForm\DragObj.js" />
+    <EmbeddedResource Include="Htmls\jWebForm\jWebForm.css" />
+    <EmbeddedResource Include="Htmls\jWebForm\jWebForm.js" />
+    <EmbeddedResource Include="Htmls\Main.html" />
+    <EmbeddedResource Include="Htmls\Options.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
