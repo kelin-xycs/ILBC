@@ -26,7 +26,6 @@
         protected override CefRequestHandler GetRequestHandler()
         {
             return new RequestHandler();
-            //return base.GetRequestHandler();
         }
 
         //  add by kelin 2019/03/26

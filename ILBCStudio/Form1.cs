@@ -20,7 +20,7 @@ namespace ILBCStudio
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            string url = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase), "Main.html");
+            string url = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase), @"Htmls\Main.html");
 
             string debug = System.Configuration.ConfigurationManager.AppSettings["Debug"];
 
@@ -39,7 +39,6 @@ namespace ILBCStudio
 
             browser.ProcessMessageReceived += Browser_ProcessMessageReceived;
 
-            //this.Controls.Add(browser);
             panel2.Controls.Add(browser);
         }
 
@@ -86,5 +85,26 @@ namespace ILBCStudio
         {
         }
 
+        private bool isBarExpanded = true;
+
+        private void BtnManual_Click(object sender, EventArgs e)
+        {
+            if (isBarExpanded)
+            {
+                panel1.Height = 40;
+
+                btnManual.Text = "︾ 展开";
+
+                isBarExpanded = false;
+
+                return;
+            }
+
+            panel1.Height = 212;
+
+            btnManual.Text = "︽ 折叠";
+
+            isBarExpanded = true;
+        }
     }
 }

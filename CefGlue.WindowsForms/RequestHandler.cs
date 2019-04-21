@@ -1,9 +1,8 @@
 ﻿using System;
-
 using System.IO;
-
 using System.Reflection;
-
+using System.Web;
+using System.Windows.Forms;
 
 //  add by kelin 2019/04/19
 namespace Xilium.CefGlue.WindowsForms
@@ -16,10 +15,10 @@ namespace Xilium.CefGlue.WindowsForms
 
             if (url.Host == "localapp")
                 return new ResourceHandler(browser, frame, request);
+            else if (url.Host == "localfile")
+                return new FileResourceHandler(browser, frame, request);
 
-            //return base.GetResourceHandler(browser, frame, request);
             return base.GetResourceHandler(browser, frame, request);
-            
         }
     }
 
@@ -40,155 +39,185 @@ namespace Xilium.CefGlue.WindowsForms
 
         protected override bool ProcessRequest(CefRequest request, CefCallback callback)
         {
-            if (stream != null)
-                stream.Dispose();
+            try
+            {
+                Uri url = new Uri(request.Url);
 
+                string resourceName = url.LocalPath.Substring(1).Replace('/', '.');
 
-            Uri url = new Uri(request.Url);
+                resourceName = HttpUtility.UrlDecode(resourceName);
 
-            string resourceName = url.LocalPath.Substring(1).Replace('/', '.');
-            //if (url.Host == "localapp")
-            //stream = File.Open(file, FileMode.Open);
-            Assembly assm = Assembly.GetEntryAssembly();
+                Assembly assm = Assembly.GetEntryAssembly();
 
-            Stream s = assm.GetManifestResourceStream(resourceName);
+                stream = assm.GetManifestResourceStream(resourceName);
 
-            if (s == null)
-                throw new Exception("找不到 名为 \"" + resourceName + "\" 的资源 。");
+                if (stream == null)
+                    throw new Exception("找不到 名为 \"" + resourceName + "\" 的资源 。");
 
-            this.stream = s;
-            //this.image = Image.FromStream(s);
+                callback.Continue();
+                return true;
 
+            }
+            catch(Exception ex)
+            {
+                if (stream != null)
+                    stream.Dispose();
 
-            callback.Continue();
-            return true;
-            //throw new NotImplementedException();
+                MessageBox.Show(ex.ToString());
+
+                return false;
+            }
+            
         }
 
         protected override bool ReadResponse(Stream response, int bytesToRead, out int bytesRead, CefCallback callback)
         {
-            byte[] b = new byte[bytesToRead];
-
-            bytesRead = stream.Read(b, 0, bytesToRead);
-
-
-            if (bytesRead == 0)
+            try
             {
-                stream.Dispose();
-                return false;
-                //callback.Continue();
+                byte[] b = new byte[bytesToRead];
+
+                bytesRead = stream.Read(b, 0, bytesToRead);
+
+                if (bytesRead == 0)
+                {
+                    stream.Dispose();
+                    return false;
+                }
+
+                response.Write(b, 0, bytesRead);
+
+                return true;
             }
+            catch (Exception ex)
+            {
+                if (stream != null)
+                    stream.Dispose();
 
-            response.Write(b, 0, bytesRead);
+                MessageBox.Show(ex.ToString());
 
-
-
-            return true;
-            //throw new NotImplementedException();
+                bytesRead = 0;
+                return false;
+            }
         }
 
         protected override bool CanGetCookie(CefCookie cookie)
         {
             return false;
-            //throw new NotImplementedException();
         }
 
         protected override bool CanSetCookie(CefCookie cookie)
         {
             return false;
-            //throw new NotImplementedException();
         }
 
         protected override void GetResponseHeaders(CefResponse response, out long responseLength, out string redirectUrl)
         {
             responseLength = -1;
             redirectUrl = null;
-            //throw new NotImplementedException();
         }
 
         protected override void Cancel()
         {
             if (stream != null)
                 stream.Dispose();
-            //throw new NotImplementedException();
         }
     }
 
-    //internal class ResourceHandler : CefResourceHandler
-    //{
-    //    private CefBrowser browser;
-    //    private CefFrame frame;
-    //    private CefRequest request;
+    internal class FileResourceHandler : CefResourceHandler
+    {
+        private CefBrowser browser;
+        private CefFrame frame;
+        private CefRequest request;
 
-    //    private Stream stream;
+        private Stream stream;
 
-    //    public ResourceHandler(CefBrowser browser, CefFrame frame, CefRequest request)
-    //    {
-    //        this.browser = browser;
-    //        this.frame = frame;
-    //        this.request = request;
-    //    }
+        public FileResourceHandler(CefBrowser browser, CefFrame frame, CefRequest request)
+        {
+            this.browser = browser;
+            this.frame = frame;
+            this.request = request;
+        }
 
-    //    protected override bool ProcessRequest(CefRequest request, CefCallback callback)
-    //    {
-    //        if (stream != null)
-    //            stream.Dispose();
+        protected override bool ProcessRequest(CefRequest request, CefCallback callback)
+        {
+            try
+            {
+                Uri url = new Uri(request.Url);
 
-    //        string file = new Uri(request.Url).LocalPath;
-    //        stream = File.Open(file, FileMode.Open);
+                string u = url.AbsoluteUri.Substring(17);
 
-    //        callback.Continue();
-    //        return true;
-    //        //throw new NotImplementedException();
-    //    }
+                int i = u.IndexOf('/');
 
-    //    protected override bool ReadResponse(Stream response, int bytesToRead, out int bytesRead, CefCallback callback)
-    //    {
-    //        byte[] b = new byte[bytesToRead];
+                string file = u.Substring(0, i) + ":" + u.Substring(i);
 
-    //        bytesRead = stream.Read(b, 0, bytesToRead);
+                file = HttpUtility.UrlDecode(file);
 
+                stream = File.Open(file, FileMode.Open);
 
-    //        if (bytesRead == 0)
-    //        {
-    //            stream.Dispose();
-    //            return false;
-    //            //callback.Continue();
-    //        }
+                callback.Continue();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (stream != null)
+                    stream.Dispose();
 
-    //        response.Write(b, 0, bytesRead);
+                MessageBox.Show(ex.ToString());
 
+                return false;
+            }
+        }
 
+        protected override bool ReadResponse(Stream response, int bytesToRead, out int bytesRead, CefCallback callback)
+        {
+            try
+            {
+                byte[] b = new byte[bytesToRead];
 
-    //        return true;
-    //        //throw new NotImplementedException();
-    //    }
+                bytesRead = stream.Read(b, 0, bytesToRead);
 
-    //    protected override bool CanGetCookie(CefCookie cookie)
-    //    {
-    //        return false;
-    //        //throw new NotImplementedException();
-    //    }
+                if (bytesRead == 0)
+                {
+                    stream.Dispose();
+                    return false;
+                }
 
-    //    protected override bool CanSetCookie(CefCookie cookie)
-    //    {
-    //        return false;
-    //        //throw new NotImplementedException();
-    //    }
+                response.Write(b, 0, bytesRead);
 
-    //    protected override void GetResponseHeaders(CefResponse response, out long responseLength, out string redirectUrl)
-    //    {
-    //        responseLength = -1;
-    //        redirectUrl = null;
-    //        //throw new NotImplementedException();
-    //    }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (stream != null)
+                    stream.Dispose();
 
-    //    protected override void Cancel()
-    //    {
-    //        if (stream != null)
-    //            stream.Dispose();
-    //        //throw new NotImplementedException();
-    //    }
-    //}
+                MessageBox.Show(ex.ToString());
 
+                bytesRead = 0;
+                return false;
+            }
+        }
+
+        protected override bool CanGetCookie(CefCookie cookie)
+        {
+            return false;
+        }
+
+        protected override bool CanSetCookie(CefCookie cookie)
+        {
+            return false;
+        }
+
+        protected override void GetResponseHeaders(CefResponse response, out long responseLength, out string redirectUrl)
+        {
+            responseLength = -1;
+            redirectUrl = null;
+        }
+
+        protected override void Cancel()
+        {
+            if (stream != null)
+                stream.Dispose();
+        }
+    }
 }
