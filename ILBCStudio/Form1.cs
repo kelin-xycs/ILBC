@@ -20,6 +20,7 @@ namespace ILBCStudio
 
         private void Form1_Load(object sender, EventArgs e)
         {
+
             string url = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase), @"Htmls\Main.html");
 
             string debug = System.Configuration.ConfigurationManager.AppSettings["Debug"];
@@ -50,7 +51,8 @@ namespace ILBCStudio
             }
             else
             {
-                MessageBox.Show("未知的消息 from Render Process ，消息名字“" + message.Name + "”。");
+                this.BeginInvoke(new Action(() =>
+                    { MessageBox.Show("未知的消息 from Render Process ，消息名字“" + message.Name + "”。"); }));
             }
         }
 
@@ -106,5 +108,6 @@ namespace ILBCStudio
 
             isBarExpanded = true;
         }
+
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xilium.CefGlue;
 
-namespace JsCall
+namespace ILBCStudio.JsCall
 {
     class DemoRenderProcessHandler : CefRenderProcessHandler
     {

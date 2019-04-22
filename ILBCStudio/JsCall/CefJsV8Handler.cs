@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
+using System.Windows.Forms;
+
 using Xilium.CefGlue;
 
-namespace JsCall
+namespace ILBCStudio.JsCall
 {
     public class CefJsV8Handler : CefV8Handler
     {
@@ -25,7 +24,9 @@ namespace JsCall
         }
         #endregion 构造函数
 
+
         #region 事件
+
         /// <summary>
         /// 网页脚本与后台程序交互方法
         /// 提示一：如果 returnValue = null; 则会导致网页前端出现错误：Cannot read property ’constructor’ of undefined
@@ -39,69 +40,94 @@ namespace JsCall
         /// <returns></returns>
         protected override bool Execute(string name, CefV8Value obj, CefV8Value[] arguments, out CefV8Value returnValue, out string exception)
         {
-            string result = string.Empty;
-            Object retObj = null;
-            Type t = JsObject.GetType();
-            MethodInfo mi = t.GetMethod(name);
-            if(mi != null){
-                if (arguments.Length > 0)
+
+            //  这里要加 try，不然发生异常直接导致 Render Process 崩溃，问题是遗留下另一个 Process，
+            //  窗口关闭时遗留的这个 Process 不会退出
+
+            try
+            {
+                string result = string.Empty;
+                Object retObj = null;
+                Type t = JsObject.GetType();
+                MethodInfo mi = t.GetMethod(name);
+                if (mi != null)
                 {
-                    Object[] param = new Object[arguments.Length];
-                    CefV8Value value = null;
-                    for(int i = 0,j = arguments.Length; i < j; i++){
-                        value = arguments[i];
-                        if(value.IsString){
-                            param[i] = value.GetStringValue();
-                        } else if(value.IsInt){
-                            param[i] = value.GetIntValue();
-                        } else if(value.IsDouble){
-                            param[i] = value.GetDoubleValue();
-                        }
-                        else if (value.IsArray)
+                    if (arguments.Length > 0)
+                    {
+                        Object[] param = new Object[arguments.Length];
+                        CefV8Value value = null;
+                        for (int i = 0, j = arguments.Length; i < j; i++)
                         {
-                            int len = value.GetArrayLength();
-                            Object[] p2 = new Object[len];
-                            for (int k = 0; k < len; k++)
+                            value = arguments[i];
+                            if (value.IsString)
                             {
-                                CefV8Value va = value.GetValue(k);
-                                if(va.IsString){
-                                    p2[k] = va.GetStringValue();
-                                } else if(va.IsInt){
-                                    p2[k] = va.GetIntValue();
-                                }
-                                else if (va.IsDouble)
-                                {
-                                    p2[k] = va.GetDoubleValue();
-                                }
+                                param[i] = value.GetStringValue();
                             }
-                            param[i] = p2;
+                            else if (value.IsInt)
+                            {
+                                param[i] = value.GetIntValue();
+                            }
+                            else if (value.IsDouble)
+                            {
+                                param[i] = value.GetDoubleValue();
+                            }
+                            else if (value.IsArray)
+                            {
+                                int len = value.GetArrayLength();
+                                Object[] p2 = new Object[len];
+                                for (int k = 0; k < len; k++)
+                                {
+                                    CefV8Value va = value.GetValue(k);
+                                    if (va.IsString)
+                                    {
+                                        p2[k] = va.GetStringValue();
+                                    }
+                                    else if (va.IsInt)
+                                    {
+                                        p2[k] = va.GetIntValue();
+                                    }
+                                    else if (va.IsDouble)
+                                    {
+                                        p2[k] = va.GetDoubleValue();
+                                    }
+                                }
+                                param[i] = p2;
+                            }
+                            else if (value.IsBool)
+                            {
+                                param[i] = value.GetBoolValue();
+                            }
+                            else if (value.IsNull || value.IsUndefined)
+                            {
+                                param[i] = null;
+                            }
                         }
-                        else if (value.IsBool)
-                        {
-                            param[i] = value.GetBoolValue();
-                        }
-                        else if (value.IsNull || value.IsUndefined)
-                        {
-                            param[i] = null;
-                        }                   
+                        retObj = mi.Invoke(JsObject, param);
                     }
-                    retObj = mi.Invoke(JsObject, param);
+                    else
+                    {
+                        retObj = mi.Invoke(JsObject, null);
+                    }
                 }
-                else
+                if (retObj != null)
                 {
-                    retObj = mi.Invoke(JsObject, null);
+                    result = retObj.ToString();
                 }
+                returnValue = CefV8Value.CreateString(result);
+                exception = null;
+                return true;
             }
-            if(retObj != null){
-                result = retObj.ToString();
-            }            
-            returnValue = CefV8Value.CreateString(result);
-            exception = null;
-            return true;
+            catch(Exception ex)
+            {
+                returnValue = null;
+                exception = ex.ToString();
+                MessageBox.Show(exception);
+                return true;
+            }
         }
+
         #endregion 事件
 
-        
 
     }
 

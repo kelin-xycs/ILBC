@@ -1,16 +1,17 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.IO;
 
 using Xilium.CefGlue;
 
-namespace JsCall
+namespace ILBCStudio.JsCall
 {
     public class JsEvent
     {
         public void OpenSaveFileDialog()
         {
             CefProcessMessage m = CefProcessMessage.Create("OpenSaveFileDialog");
-            
+
             DemoRenderProcessHandler._browser.SendProcessMessage(CefProcessId.Browser, m);
         }
 

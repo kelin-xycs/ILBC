@@ -1,6 +1,6 @@
 ﻿using Xilium.CefGlue;
 
-using JsCall;
+using ILBCStudio.JsCall;
 
 namespace ILBCStudio
 {

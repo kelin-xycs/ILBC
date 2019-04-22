@@ -58,7 +58,7 @@ namespace Xilium.CefGlue.WindowsForms
                 return true;
 
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (stream != null)
                     stream.Dispose();
@@ -67,7 +67,6 @@ namespace Xilium.CefGlue.WindowsForms
 
                 return false;
             }
-            
         }
 
         protected override bool ReadResponse(Stream response, int bytesToRead, out int bytesRead, CefCallback callback)

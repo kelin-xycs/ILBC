@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JsCall
+namespace ILBCStudio.JsCall
 {
     public class CefJavaScriptEx
     {
