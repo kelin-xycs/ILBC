@@ -23,6 +23,8 @@ namespace ILBCStudio
 
             string url = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase), @"Htmls\Main.html");
 
+            url = "local" + url.Replace(":", string.Empty);
+
             string debug = System.Configuration.ConfigurationManager.AppSettings["Debug"];
 
             if (!string.IsNullOrWhiteSpace(debug) && bool.Parse(debug) == true)
@@ -33,7 +35,7 @@ namespace ILBCStudio
 
             browser = new CefWebBrowser();
 
-            browser.StartUrl = "localapp/ILBCStudio/Htmls/Main.html";
+            browser.StartUrl = "localapp/" + this.GetType().Namespace + "/Htmls/Main.html";
             browser.Dock = DockStyle.Fill;
 
             browser.BackColor = Color.White;
